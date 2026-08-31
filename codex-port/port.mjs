@@ -11,6 +11,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const portDir = join(root, "codex-port");
 const dist = join(portDir, "dist");
 const runners = JSON.parse(readFileSync(join(portDir, "runners.json"), "utf8"));
+const role = (r) => { const x = runners.roles[r]; return "`" + x.model + "` at effort `" + x.effort + "`"; };
 const allow = readFileSync(join(portDir, "allow.txt"), "utf8")
   .split("\n").filter((l) => l.trim() && !l.startsWith("#")).map((l) => l.trim());
 
@@ -87,16 +88,20 @@ const RULES = [
   ["askquestion", /`AskQuestion`/g, "a direct question to the user"],
 
   // 4. models -> runner roles
-  ["model-code", /composer-2\.5-fast/g, () => runners.roles.code],
-  ["model-judgment", /claude-opus-4-8-thinking-xhigh/g, () => runners.roles.judgment],
-  ["model-fast", /gpt-5\.5-high-fast/g, () => runners.roles.fast],
+  ["m-grok-fast", /`?grok-4\.6-fast-xhigh`?/g, () => role("fast")],
+  ["m-fable-max", /`?claude-fable-5-thinking-max`?/g, () => role("judgment")],
+  ["m-opus5-xhigh", /`?claude-opus-5-thinking-xhigh`?/g, () => role("judgment")],
+  ["m-sol-max", /`?gpt-5\.6-sol-max`?/g, () => role("code-exact")],
+  ["m-composer", /`?composer-2\.5-fast`?/g, () => role("fast")],
+  ["m-opus48", /`?claude-opus-4-8-thinking-xhigh`?/g, () => role("judgment")],
+  ["m-gpt55fast", /`?gpt-5\.5-high-fast`?/g, () => role("code")],
 ];
 
 // ---------------------------------------------------------------- guard
 const DENY = [
   [/\.cursor\//, "unported .cursor/ path"],
   [/\.mdc\b/, "Cursor .mdc rule file"],
-  [/composer-\d/, "Cursor-only model slug"],
+  [/\b(?:claude|grok|gemini|llama|mistral|composer)-[a-z0-9.]+(?:-[a-z0-9]+)*\b/i, "non-Codex vendor model slug"],
   [/subagent_type/, "raw Cursor subagent primitive"],
   [/agent-transcripts/, "Cursor transcript path"],
   [/Cursor's built-in/, "unmapped Cursor built-in"],

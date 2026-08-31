@@ -1,21 +1,32 @@
 {
-  "_comment": "Role -> runner. pstack's panels need INDEPENDENT priors, not one model N times. Each runner is a CLI you already pay for. Verify these command lines after `brew upgrade codex`.",
+  "_comment": "Two tiers. Single-model roles map to a Codex slug + effort, since only OpenAI models are selectable natively. Panel roles need INDEPENDENT priors, which one vendor cannot give: those spawn CLI subprocesses instead, one per arm. Both CLIs authenticate from a subscription; neither needs an API key.",
+
+  "_codex_bin": "/Applications/ChatGPT.app/Contents/Resources/codex",
+  "_note_bin": "NOT bare `codex` — PATH resolves to a stale brew 0.45.0 with no subagent support.",
+
   "roles": {
-    "code":     "codex-sol-high",
-    "fast":     "codex-luna-medium",
-    "judgment": "claude-opus-xhigh"
+    "code":       { "model": "gpt-5.6-sol",  "effort": "high"   },
+    "code-hard":  { "model": "gpt-5.6-sol",  "effort": "max"    },
+    "code-exact": { "model": "gpt-5.6-sol",  "effort": "xhigh"  },
+    "fast":       { "model": "gpt-5.6-luna", "effort": "medium" },
+    "judgment":   { "model": "gpt-5.6-sol",  "effort": "max"    },
+    "prose":      { "model": "gpt-5.6-sol",  "effort": "xhigh"  }
   },
+
   "panels": {
-    "interrogate": ["codex-sol-xhigh", "claude-opus-xhigh", "codex-terra-high"],
-    "arena":       ["codex-sol-xhigh", "claude-opus-xhigh", "codex-terra-high"],
-    "architect":   ["codex-sol-xhigh", "claude-opus-xhigh"],
-    "how-critics": ["codex-sol-xhigh", "claude-opus-xhigh"]
+    "interrogate": ["claude-opus", "codex-sol", "codex-terra"],
+    "arena":       ["claude-opus", "codex-sol", "codex-terra"],
+    "architect":   ["claude-opus", "codex-sol"],
+    "how-critics": ["claude-opus", "codex-sol"],
+    "reflect":     ["claude-opus", "codex-sol"]
   },
+
   "runners": {
-    "codex-sol-xhigh":    { "cmd": "codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort=\"xhigh\" -" },
-    "codex-sol-high":     { "cmd": "codex exec --sandbox workspace-write -m gpt-5.6-sol -c model_reasoning_effort=\"high\" -" },
-    "codex-terra-high":   { "cmd": "codex exec --sandbox read-only -m gpt-5.6-terra -c model_reasoning_effort=\"high\" -" },
-    "codex-luna-medium":  { "cmd": "codex exec --sandbox read-only -m gpt-5.6-luna -" },
-    "claude-opus-xhigh":  { "cmd": "claude -p --permission-mode plan" }
-  }
+    "codex-sol":   { "cmd": ["/Applications/ChatGPT.app/Contents/Resources/codex", "exec", "--sandbox", "read-only", "-m", "gpt-5.6-sol", "-c", "model_reasoning_effort=\"xhigh\"", "-"], "prior": "openai-frontier" },
+    "codex-terra": { "cmd": ["/Applications/ChatGPT.app/Contents/Resources/codex", "exec", "--sandbox", "read-only", "-m", "gpt-5.6-terra", "-c", "model_reasoning_effort=\"high\"", "-"], "prior": "openai-balanced" },
+    "codex-55":    { "cmd": ["/Applications/ChatGPT.app/Contents/Resources/codex", "exec", "--sandbox", "read-only", "-m", "gpt-5.5", "-c", "model_reasoning_effort=\"xhigh\"", "-"], "prior": "openai-prev-gen" },
+    "claude-opus": { "cmd": ["/Users/gustavo/.local/bin/claude", "-p", "--permission-mode", "plan"], "prior": "anthropic" }
+  },
+
+  "_diversity_note": "claude-opus is the only genuinely independent prior available. Keep it in every panel. codex-terra and codex-55 are different training runs from codex-sol, so they add weak diversity; effort level alone adds almost none. A panel of Codex-only arms is close to one opinion repeated."
 }
