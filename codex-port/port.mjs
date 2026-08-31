@@ -3,7 +3,7 @@
 // Upstream directories are READ-ONLY. All host coupling lives in the rules below.
 // Run: node codex-port/port.mjs [--check]
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync, chmodSync } from "node:fs";
 import { resolve, dirname, relative, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -144,19 +144,38 @@ function walk(dir, out = []) {
 }
 
 // ---------------------------------------------------------------- run
+// Prose is translated. Everything else (TypeScript, JSON, lockfiles, the
+// watch-pr executable) is copied verbatim: rewriting code with prose rules
+// corrupts it. Non-prose files are scanned advisory-only.
+const TRANSLATABLE = /\.(md|sh)$/;
+
 const checkOnly = process.argv.includes("--check");
 if (!checkOnly) { rmSync(dist, { recursive: true, force: true }); mkdirSync(dist, { recursive: true }); }
 
-let violations = [], skills = 0, overrides = 0, files = 0;
+let violations = [], advisory = [], skills = 0, overrides = 0, files = 0, verbatim = 0;
 
 for (const { dir, ns } of SOURCES) {
   for (const src of walk(join(root, dir, "skills"))) {
-    if (!src.endsWith(".md") && !src.endsWith(".tsv") && !src.endsWith(".sh")) continue;
     const rel = relative(join(root, dir, "skills"), src);
     const skillName = rel.split("/")[0];
     if (EXCLUDE.has(`${dir}/${skillName}`)) continue;
     const outRel = join("skills", `${ns}-${skillName}`, rel.split("/").slice(1).join("/") || "SKILL.md");
     const outPath = join(dist, outRel);
+
+    // non-prose: copy bytes, preserve the exec bit, never translate
+    if (!TRANSLATABLE.test(src)) {
+      verbatim++; files++;
+      if (!checkOnly) {
+        mkdirSync(dirname(outPath), { recursive: true });
+        copyFileSync(src, outPath);
+        chmodSync(outPath, statSync(src).mode & 0o777);
+      }
+      try {
+        const t = readFileSync(src, "utf8");
+        if (/\.cursor\/|cursor\.sh|Cursor/i.test(t)) advisory.push(outRel);
+      } catch { /* binary */ }
+      continue;
+    }
 
     // overrides win verbatim — that's where judgment lives, not in the rules
     const ovr = join(portDir, "overrides", ns, rel);
@@ -198,7 +217,11 @@ if (!checkOnly) {
     readFileSync(join(portDir, "host-delegation.md"), "utf8"));
 }
 
-console.log(`${files} files · ${skills} skills · ${overrides} from overrides`);
+console.log(`${files} files · ${skills} skills · ${verbatim} copied verbatim · ${overrides} from overrides`);
+if (advisory.length) {
+  console.log(`\nnote: ${advisory.length} non-prose file(s) mention Cursor and were copied untranslated:`);
+  for (const f of advisory.slice(0, 10)) console.log(`  ${f}`);
+}
 if (violations.length) {
   console.error(`\n${violations.length} unported Cursor reference(s) — build is NOT clean:\n`);
   const byFile = {};
