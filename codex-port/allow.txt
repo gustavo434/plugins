@@ -1,0 +1,5 @@
+# Literal substrings that may survive the guard. One per line.
+# Only for genuine false positives, never to silence a real port gap.
+cursor location
+cursor position
+text cursor

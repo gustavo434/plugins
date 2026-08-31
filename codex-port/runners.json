@@ -1,0 +1,21 @@
+{
+  "_comment": "Role -> runner. pstack's panels need INDEPENDENT priors, not one model N times. Each runner is a CLI you already pay for. Verify these command lines after `brew upgrade codex`.",
+  "roles": {
+    "code":     "codex-sol-high",
+    "fast":     "codex-luna-medium",
+    "judgment": "claude-opus-xhigh"
+  },
+  "panels": {
+    "interrogate": ["codex-sol-xhigh", "claude-opus-xhigh", "codex-terra-high"],
+    "arena":       ["codex-sol-xhigh", "claude-opus-xhigh", "codex-terra-high"],
+    "architect":   ["codex-sol-xhigh", "claude-opus-xhigh"],
+    "how-critics": ["codex-sol-xhigh", "claude-opus-xhigh"]
+  },
+  "runners": {
+    "codex-sol-xhigh":    { "cmd": "codex exec --sandbox read-only -m gpt-5.6-sol -c model_reasoning_effort=\"xhigh\" -" },
+    "codex-sol-high":     { "cmd": "codex exec --sandbox workspace-write -m gpt-5.6-sol -c model_reasoning_effort=\"high\" -" },
+    "codex-terra-high":   { "cmd": "codex exec --sandbox read-only -m gpt-5.6-terra -c model_reasoning_effort=\"high\" -" },
+    "codex-luna-medium":  { "cmd": "codex exec --sandbox read-only -m gpt-5.6-luna -" },
+    "claude-opus-xhigh":  { "cmd": "claude -p --permission-mode plan" }
+  }
+}
