@@ -37,7 +37,7 @@ const RULES = [
   ["worktrees", /`?\.cursor\/worktrees\//g, "~/.codex/worktrees/"],
   ["skills-path-user", /~\/\.cursor\/skills\//g, "~/.codex/skills/"],
   ["skills-path-proj", /(?<!~\/)\.cursor\/skills\//g, ".codex/skills/"],
-  ["models-rule-file", /~\/\.cursor\/rules\/pstack-models\.mdc/g, "~/.codex/pstack-runners.json"],
+  ["models-rule-file", /~\/\.cursor\/rules\/pstack-models\.mdc/g, "~/.codex/pstack-runners.md"],
   ["rules-path", /~\/\.cursor\/rules\//g, "~/.codex/"],
   ["plugin-path", /~\/\.cursor\/plugins\//g, "~/.codex/plugins/cache/"],
   ["projects-path", /~\/\.cursor\/projects\//g, "~/.codex/sessions/"],
