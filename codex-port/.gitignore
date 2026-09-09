@@ -1,0 +1,3 @@
+# Ship the generated plugin despite the upstream repository's dist/ ignore.
+!dist/
+.test-*/

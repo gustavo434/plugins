@@ -1,0 +1,5 @@
+interface:
+  display_name: "thermo nuclear code quality review"
+  short_description: "Apply thermo nuclear code quality review guidance in Codex"
+policy:
+  allow_implicit_invocation: false

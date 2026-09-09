@@ -1,0 +1,5 @@
+interface:
+  display_name: "typescript best practices"
+  short_description: "Apply typescript best practices guidance in Codex"
+policy:
+  allow_implicit_invocation: false

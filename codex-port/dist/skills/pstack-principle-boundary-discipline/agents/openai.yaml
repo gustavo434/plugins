@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle boundary discipline"
+  short_description: "Apply principle boundary discipline guidance in Codex"
+policy:
+  allow_implicit_invocation: false

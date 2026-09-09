@@ -1,0 +1,5 @@
+interface:
+  display_name: "principle type system discipline"
+  short_description: "Apply principle type system discipline guidance in Codex"
+policy:
+  allow_implicit_invocation: false

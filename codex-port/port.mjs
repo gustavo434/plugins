@@ -3,13 +3,14 @@
 // Upstream directories are READ-ONLY. All host coupling lives in the rules below.
 // Run: node codex-port/port.mjs [--check]
 
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, copyFileSync, chmodSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync, readdirSync, statSync, chmodSync } from "node:fs";
 import { resolve, dirname, relative, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const portDir = join(root, "codex-port");
 const dist = join(portDir, "dist");
+const upstream = JSON.parse(readFileSync(join(root, "pstack/.cursor-plugin/plugin.json"), "utf8"));
 const runners = JSON.parse(readFileSync(join(portDir, "runners.json"), "utf8"));
 const role = (r) => { const x = runners.roles[r]; return "`" + x.model + "` at effort `" + x.effort + "`"; };
 const allow = readFileSync(join(portDir, "allow.txt"), "utf8")
@@ -54,7 +55,8 @@ const RULES = [
   ["task-tool-the", /the Task tool\b/g, "the host's subagent spawn (see references/host-delegation.md)"],
   ["task-tool", /\bTask tool\b/g, "subagent delegation primitive (see references/host-delegation.md)"],
   ["task-every", /\bevery `Task` call\b/g, "every subagent spawn (see references/host-delegation.md)"],
-  ["task-subagent", /\ba `Task` subagent\b/g, "a subagent"],
+  ["task-subagent", /`?\bTask`? subagent\b/g, "subagent"],
+  ["task-remaining", /`?\bTask`? (?=call|`model`|response|prompt|schema)/g, "subagent "],
   ["env-cloud", /`environment: "cloud"`/g, "a background subagent"],
   ["env-local", /`environment: "local"`/g, "a local subagent"],
 
@@ -85,16 +87,17 @@ const RULES = [
   ["tk-paren", /\(from `cursor-team-kit`\)/g, "(team-kit skills in this plugin)"],
   ["cursor-dashboard", /the cloud agent's status in the Cursor dashboard/g, "the subagent's status reported by the host"],
   ["babysit-builtin2", /Cursor's built-in babysit skill/g, "any host built-in babysit skill"],
-  ["askquestion", /`AskQuestion`/g, "a direct question to the user"],
+  ["askquestion", /`?\bAskQuestion\b`?/g, "the host's user-input tool"],
 
   // 4. models -> runner roles
   ["m-grok-fast", /`?grok-4\.6-fast-xhigh`?/g, () => role("fast")],
-  ["m-fable-max", /`?claude-fable-5-thinking-max`?/g, () => role("judgment")],
+  ["m-fable-max", /`?claude-fable-5(?:-1)?-thinking-max`?/g, () => role("judgment")],
   ["m-opus5-xhigh", /`?claude-opus-5-thinking-xhigh`?/g, () => role("judgment")],
   ["m-sol-max", /`?gpt-5\.6-sol-max`?/g, () => role("code-exact")],
   ["m-composer", /`?composer-2\.5-fast`?/g, () => role("fast")],
   ["m-opus48", /`?claude-opus-4-8-thinking-xhigh`?/g, () => role("judgment")],
   ["m-gpt55fast", /`?gpt-5\.5-high-fast`?/g, () => role("code")],
+  ["team-kit-invocation", /\$team-kit:/g, "$pstack:"],
 ];
 
 // ---------------------------------------------------------------- guard
@@ -150,7 +153,10 @@ function walk(dir, out = []) {
 const TRANSLATABLE = /\.(md|sh)$/;
 
 const checkOnly = process.argv.includes("--check");
-if (!checkOnly) { rmSync(dist, { recursive: true, force: true }); mkdirSync(dist, { recursive: true }); }
+const output = new Map();
+function emit(path, data, mode = 0o644) {
+  output.set(path, { data: Buffer.isBuffer(data) ? data : Buffer.from(data), mode });
+}
 
 let violations = [], advisory = [], skills = 0, overrides = 0, files = 0, verbatim = 0;
 
@@ -165,11 +171,7 @@ for (const { dir, ns } of SOURCES) {
     // non-prose: copy bytes, preserve the exec bit, never translate
     if (!TRANSLATABLE.test(src)) {
       verbatim++; files++;
-      if (!checkOnly) {
-        mkdirSync(dirname(outPath), { recursive: true });
-        copyFileSync(src, outPath);
-        chmodSync(outPath, statSync(src).mode & 0o777);
-      }
+      emit(outRel, readFileSync(src), statSync(src).mode & 0o777);
       try {
         const t = readFileSync(src, "utf8");
         if (/\.cursor\/|cursor\.sh|Cursor/i.test(t)) advisory.push(outRel);
@@ -190,31 +192,55 @@ for (const { dir, ns } of SOURCES) {
         const explicitOnly = /^disable-model-invocation:\s*true\s*$/m.test(fm);
         const cleanFm = fm.split("\n")
           .filter((l) => !/^(disable-model-invocation|mode|icon|color):/.test(l)).join("\n");
-        text = `---\n${cleanFm}\n---\n${body}`;
-        if (explicitOnly && !checkOnly) {
-          const y = join(dirname(outPath), "agents", "openai.yaml");
-          mkdirSync(dirname(y), { recursive: true });
-          writeFileSync(y, "policy:\n  allow_implicit_invocation: false\n");
+        const hostGuide = !body.includes("references/host-delegation.md") && /subagent|worker type|runner|configured .*model/i.test(body)
+          ? "\nBefore choosing models or delegating, read [Codex host guidance](references/host-delegation.md).\n"
+          : "";
+        text = `---\n${cleanFm}\n---\n${hostGuide}${body}`;
+        if (explicitOnly) {
+          const label = skillName.replaceAll("-", " ");
+          const shortLabel = label.length > 36 ? label.slice(0, 36).replace(/\s+\S*$/, "") : label;
+          emit(join(dirname(outRel), "agents", "openai.yaml"),
+            `interface:\n  display_name: ${JSON.stringify(label)}\n  short_description: ${JSON.stringify(`Apply ${shortLabel} guidance in Codex`)}\npolicy:\n  allow_implicit_invocation: false\n`);
         }
       }
     }
 
     if (!isOverride) violations.push(...guard(text, outRel));
+    text = text.replaceAll("references/host-delegation.md",
+      relative(dirname(outPath), join(dist, "references/host-delegation.md")));
+    if (src.endsWith(".md")) text = text.replace(/\n+$/, "\n");
     files++;
-    if (!checkOnly) { mkdirSync(dirname(outPath), { recursive: true }); writeFileSync(outPath, text); }
+    emit(outRel, text, statSync(src).mode & 0o777);
   }
 }
 
-if (!checkOnly) {
-  mkdirSync(join(dist, ".codex-plugin"), { recursive: true });
-  writeFileSync(join(dist, ".codex-plugin", "plugin.json"), JSON.stringify({
-    name: "pstack", version: "0.1.0",
-    description: "Upstream pstack + cursor-team-kit, mechanically translated for Codex. Generated by codex-port/port.mjs — do not hand-edit.",
-    license: "MIT", skills: "./skills/",
-  }, null, 2) + "\n");
-  mkdirSync(join(dist, "references"), { recursive: true });
-  writeFileSync(join(dist, "references", "host-delegation.md"),
-    readFileSync(join(portDir, "host-delegation.md"), "utf8"));
+emit(".codex-plugin/plugin.json", JSON.stringify({
+  name: "pstack", version: upstream.version,
+  description: "Upstream pstack and cursor-team-kit, translated for Codex. Generated by codex-port/port.mjs.",
+  author: upstream.author, license: upstream.license, skills: "./skills/",
+  homepage: upstream.homepage,
+  repository: "https://github.com/gustavo434/plugins",
+  interface: {
+    displayName: "pstack for Codex",
+    shortDescription: "Engineering workflows, reviews, and verification",
+    longDescription: "Codex adaptations of pstack and cursor-team-kit, including poteto-mode playbooks, code review, model configuration, and verification skills.",
+    developerName: "Lauren Tan; Codex port by gustavo434",
+    category: "Developer Tools",
+    capabilities: ["Read", "Write"],
+    defaultPrompt: ["Use $poteto-mode to work through this task."],
+    logo: "./assets/logo.png",
+  },
+}, null, 2) + "\n");
+emit("assets/logo.png", readFileSync(join(root, "pstack", upstream.logo)));
+emit("LICENSE", readFileSync(join(root, "pstack/LICENSE")));
+for (const name of ["host-delegation.md", "runners.json"]) {
+  emit(join("references", name), readFileSync(join(portDir, name)));
+}
+for (const src of walk(join(root, "pstack/agents"))) {
+  const outRel = join("references/agents", relative(join(root, "pstack/agents"), src));
+  const text = translate(readFileSync(src, "utf8"));
+  violations.push(...guard(text, outRel));
+  emit(outRel, text);
 }
 
 console.log(`${files} files · ${skills} skills · ${verbatim} copied verbatim · ${overrides} from overrides`);
@@ -234,4 +260,27 @@ if (violations.length) {
   console.error(`\nFix by adding a rule to port.mjs, or a verbatim file under codex-port/overrides/.`);
   process.exit(1);
 }
-console.log("clean — no unported Cursor references");
+if (checkOnly) {
+  const stale = [];
+  for (const [path, { data, mode }] of output) {
+    const target = join(dist, path);
+    if (!existsSync(target) || !readFileSync(target).equals(data)
+        || (statSync(target).mode & 0o111) !== (mode & 0o111)) stale.push(path);
+  }
+  for (const path of walk(dist)) {
+    if (!output.has(relative(dist, path))) stale.push(relative(dist, path));
+  }
+  if (stale.length) {
+    console.error(`Generated plugin is stale (${stale.length} files). Run node codex-port/port.mjs.\n${stale.join("\n")}`);
+    process.exit(1);
+  }
+} else {
+  rmSync(dist, { recursive: true, force: true });
+  for (const [path, { data, mode }] of output) {
+    const target = join(dist, path);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, data);
+    chmodSync(target, mode);
+  }
+}
+console.log(`clean — pstack ${upstream.version}, no unported Cursor references${checkOnly ? ", generated files match" : ""}`);

@@ -1,0 +1,5 @@
+interface:
+  display_name: "reflect"
+  short_description: "Apply reflect guidance in Codex"
+policy:
+  allow_implicit_invocation: false

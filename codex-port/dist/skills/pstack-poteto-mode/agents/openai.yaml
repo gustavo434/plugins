@@ -1,0 +1,5 @@
+interface:
+  display_name: "poteto mode"
+  short_description: "Apply poteto mode guidance in Codex"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,22 @@
+name: Validate Codex port
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - "codex-port/**"
+      - "pstack/**"
+      - "cursor-team-kit/**"
+      - ".github/workflows/validate-codex-port.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test codex-port/port.test.mjs
+      - run: node codex-port/port.mjs --check
