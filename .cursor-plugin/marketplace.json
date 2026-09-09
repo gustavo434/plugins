@@ -74,6 +74,16 @@
       "description": "if you want to go fast, go deep first. pstack helps you write less, but higher quality code. rigorous agent workflows you can parallelize with confidence."
     },
     {
+      "name": "grok-voice",
+      "source": "grok-voice",
+      "description": "Add Grok voice to an app: realtime speech-to-speech, speech-to-text dictation, text-to-speech read-aloud, and a log-driven fix loop for voice sessions."
+    },
+    {
+      "name": "advisor",
+      "source": "advisor",
+      "description": "Consult a stronger model before major decisions, when stuck, and before declaring done."
+    },
+    {
       "name": "gmail",
       "source": "third_party/gmail",
       "description": "Search, read, draft, and manage email."
@@ -311,17 +321,27 @@
     {
       "name": "outlook",
       "source": "third_party/outlook",
-      "description": "Search, read, and send email, and look up contacts."
+      "description": "Search, read, and send Microsoft Outlook email, and look up contacts."
     },
     {
       "name": "outlook-calendar",
       "source": "third_party/outlook-calendar",
-      "description": "List, create, update, and cancel calendar events."
+      "description": "List, create, update, and cancel Microsoft Outlook calendar events."
     },
     {
       "name": "onedrive",
       "source": "third_party/onedrive",
-      "description": "Browse, search, and read files."
+      "description": "Browse, search, and read Microsoft OneDrive files."
+    },
+    {
+      "name": "x-ads",
+      "source": "third_party/x-ads",
+      "description": "Manage ad campaigns, create ads, track conversions, and pull performance stats."
+    },
+    {
+      "name": "attio",
+      "source": "third_party/attio",
+      "description": "Search and update CRM records, lists, notes, and tasks."
     }
   ]
 }
