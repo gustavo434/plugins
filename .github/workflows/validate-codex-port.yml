@@ -18,5 +18,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: node --test codex-port/port.test.mjs
+      - run: node --test codex-port/*.test.mjs
       - run: node codex-port/port.mjs --check

@@ -34,9 +34,13 @@ access to models or tools that the host does not expose.
 ## Panels and CLI runners
 
 [runners.json](runners.json) is bundled with the plugin. Its `roles` map single
-workers to Codex models and efforts. Its `panels` map panel names to entries in
-`runners`. Resolve a panel through that map unless the user's per-role file
-overrides it. `arena cross-judge pool` uses the arena panel by default.
+workers to Codex models and efforts. Native model entries in the user's per-role
+file select native subagents, one per entry. CLI runner names select the command
+definitions in `runners`; the `panels` map supplies defaults for CLI review
+panels. Respect the invoking skill's inline defaults for native panels.
+Use native workers for implementation panels and cross-judges that need native
+host tools. Resolve an explicit CLI review panel through the `panels` map unless
+the user's per-role file overrides it.
 
 Each runner's `cmd` is an argument array. Pass the prompt on stdin and collect
 stdout and the exit status. Resolve the configured executable on this machine
@@ -45,11 +49,11 @@ For another machine, locate the installed CLI and verify its flags with `--help`
 Use its existing authentication. Do not install or authenticate another CLI as
 a side effect of selecting a model.
 
-The Claude runner provides a second vendor for adversarial panels. Distinct
-Codex models can add useful disagreement, but repeated calls to one model do
-not provide the same diversity. If a runner is unavailable, report which panel
-arm is missing and use a supported substitute only if the skill still has
-enough independent reviewers to answer its question.
+The optional Claude runner provides a second vendor for adversarial review
+panels. Distinct Codex models can add useful disagreement, but repeated calls
+to one model do not provide the same diversity. If a runner is unavailable,
+report which panel arm is missing and use a supported substitute only if the
+skill still has enough independent reviewers to answer its question.
 
 CLI runners are configured for read-only review. Use native workers with the
 appropriate permissions for implementation arms. Apply the current task's

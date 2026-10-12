@@ -1,106 +1,123 @@
 {
-  "_comment": "Two tiers. Single-model roles map to a Codex slug + effort, since only OpenAI models are selectable natively. Panel roles need INDEPENDENT priors, which one vendor cannot give: those spawn CLI subprocesses instead, one per arm. Both CLIs authenticate from a subscription; neither needs an API key.",
-  "_codex_bin": "/Applications/ChatGPT.app/Contents/Resources/codex",
-  "_note_bin": "NOT bare `codex` \u2014 PATH resolves to a stale brew 0.45.0 with no subagent support.",
+  "_comment": "Single-worker roles map to native Codex models and efforts. Personal panel lists can select native models; the panels below define read-only CLI review runners. Existing CLI authentication is reused.",
+  "_codex_bin": "/Users/gustavo/.codex/plugins/.plugin-appserver/codex-cli/bin/codex",
+  "_note_bin": "Use the verified plugin runtime (codex-cli 0.159.2). Bare codex on this machine resolves to Homebrew 0.45.0; recheck the bundled path after runtime changes.",
   "roles": {
     "code": {
-      "model": "gpt-5.6-sol",
+      "model": "gpt-6.1-sol",
       "effort": "high"
     },
     "code-hard": {
-      "model": "gpt-5.6-sol",
-      "effort": "max"
+      "model": "gpt-6.1-sol",
+      "effort": "high"
     },
     "code-exact": {
-      "model": "gpt-5.6-sol",
-      "effort": "max"
+      "model": "gpt-6.1-sol",
+      "effort": "high"
     },
     "fast": {
-      "model": "gpt-5.6-luna",
+      "model": "gpt-6-luna",
       "effort": "medium"
     },
     "judgment": {
-      "model": "gpt-5.6-sol",
-      "effort": "max"
+      "model": "gpt-6.1-sol",
+      "effort": "high"
     },
     "prose": {
-      "model": "gpt-5.6-sol",
-      "effort": "xhigh"
+      "model": "gpt-6.1-sol",
+      "effort": "high"
     }
   },
   "panels": {
     "interrogate": [
-      "claude-opus",
       "codex-sol",
-      "codex-terra"
+      "codex-astra",
+      "codex-luna"
     ],
     "arena": [
-      "claude-opus",
       "codex-sol",
-      "codex-terra"
+      "codex-astra",
+      "codex-luna"
     ],
     "architect": [
-      "claude-opus",
-      "codex-sol"
+      "codex-sol",
+      "codex-astra",
+      "codex-luna"
     ],
     "reflect": [
-      "claude-opus",
-      "codex-sol"
+      "codex-sol",
+      "codex-luna"
     ]
   },
   "runners": {
     "codex-sol": {
       "cmd": [
-        "/Applications/ChatGPT.app/Contents/Resources/codex",
+        "/Users/gustavo/.codex/plugins/.plugin-appserver/codex-cli/bin/codex",
         "exec",
         "--sandbox",
         "read-only",
         "-m",
-        "gpt-5.6-sol",
-        "-c",
-        "model_reasoning_effort=\"xhigh\"",
-        "-"
-      ],
-      "prior": "openai-frontier"
-    },
-    "codex-terra": {
-      "cmd": [
-        "/Applications/ChatGPT.app/Contents/Resources/codex",
-        "exec",
-        "--sandbox",
-        "read-only",
-        "-m",
-        "gpt-5.6-terra",
+        "gpt-6.1-sol",
         "-c",
         "model_reasoning_effort=\"high\"",
         "-"
       ],
-      "prior": "openai-balanced"
+      "prior": "openai-sol-6.1"
     },
-    "codex-55": {
+    "codex-astra": {
       "cmd": [
-        "/Applications/ChatGPT.app/Contents/Resources/codex",
+        "/Users/gustavo/.codex/plugins/.plugin-appserver/codex-cli/bin/codex",
         "exec",
         "--sandbox",
         "read-only",
         "-m",
-        "gpt-5.5",
+        "gpt-6-astra",
         "-c",
-        "model_reasoning_effort=\"xhigh\"",
+        "model_reasoning_effort=\"high\"",
         "-"
       ],
-      "prior": "openai-prev-gen"
+      "prior": "openai-astra-6"
+    },
+    "codex-sol-6": {
+      "cmd": [
+        "/Users/gustavo/.codex/plugins/.plugin-appserver/codex-cli/bin/codex",
+        "exec",
+        "--sandbox",
+        "read-only",
+        "-m",
+        "gpt-6-sol",
+        "-c",
+        "model_reasoning_effort=\"high\"",
+        "-"
+      ],
+      "prior": "openai-sol-6"
+    },
+    "codex-luna": {
+      "cmd": [
+        "/Users/gustavo/.codex/plugins/.plugin-appserver/codex-cli/bin/codex",
+        "exec",
+        "--sandbox",
+        "read-only",
+        "-m",
+        "gpt-6-luna",
+        "-c",
+        "model_reasoning_effort=\"medium\"",
+        "-"
+      ],
+      "prior": "openai-luna-6"
     },
     "claude-opus": {
       "cmd": [
         "/Users/gustavo/.local/bin/claude",
         "-p",
+        "--model",
+        "opus",
         "--permission-mode",
         "plan"
       ],
       "prior": "anthropic"
     }
   },
-  "_diversity_note": "claude-opus is the only genuinely independent prior available. Keep it in every panel. codex-terra and codex-55 are different training runs from codex-sol, so they add weak diversity; effort level alone adds almost none. A panel of Codex-only arms is close to one opinion repeated.",
-  "_note_roles": "code-exact matches upstream's gpt-5.6-sol-max exactly. It is now identical to judgment: on a single vendor the strongest-judgment vs strongest-instruction-following split has nowhere to go, since upstream expressed it by crossing vendors. Kept as separate roles so the distinction returns for free if a Claude delegate path is added."
+  "_diversity_note": "Panels use distinct model slugs, not repeated calls at different efforts. Astra, Sol, and Luna can provide different perspectives, but remain one vendor; Sol 6 and Sol 6.1 are closely related. claude-opus remains an optional cross-vendor CLI reviewer and is not in the default panels.",
+  "_note_roles": "Sol 6.1 high handles implementation, judgment, and prose; Luna medium handles focused exploration. Personal hardest-tasks overrides reserve Astra max for exceptional work. Review panels use one Astra high arm, one Sol 6.1 high arm, and one Luna medium arm. Native workers are required for implementation; CLI runners stay read-only."
 }

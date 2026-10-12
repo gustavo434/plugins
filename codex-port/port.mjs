@@ -39,6 +39,7 @@ const RULES = [
   ["skills-path-user", /~\/\.cursor\/skills\//g, "~/.codex/skills/"],
   ["skills-path-proj", /(?<!~\/)\.cursor\/skills\//g, ".codex/skills/"],
   ["models-rule-file", /~\/\.cursor\/rules\/pstack-models\.mdc/g, "~/.codex/pstack-runners.md"],
+  ["models-rule-name", /pstack-models\.mdc/g, "~/.codex/pstack-runners.md"],
   ["rules-path", /~\/\.cursor\/rules\//g, "~/.codex/"],
   ["plugin-path", /~\/\.cursor\/plugins\//g, "~/.codex/plugins/cache/"],
   ["projects-path", /~\/\.cursor\/projects\//g, "~/.codex/sessions/"],
@@ -90,6 +91,10 @@ const RULES = [
   ["askquestion", /`?\bAskQuestion\b`?/g, "the host's user-input tool"],
 
   // 4. models -> runner roles
+  ["m-grok47-fast", /`?grok-4\.7-xhigh-fast`?/g, () => role("fast")],
+  ["m-opus55-xhigh", /`?claude-opus-5-5-xhigh`?/g, () => role("judgment")],
+  ["model-family-prefixes", /Families go by prefix: `claude-\*` and `grok-\*`\./g,
+    "Use the Codex model families exposed by the host, such as Sol, Astra, and Luna."],
   ["m-grok-fast", /`?grok-4\.6-fast-xhigh`?/g, () => role("fast")],
   ["m-fable-max", /`?claude-fable-5(?:-1)?-thinking-max`?/g, () => role("judgment")],
   ["m-opus5-xhigh", /`?claude-opus-5-thinking-xhigh`?/g, () => role("judgment")],
@@ -137,6 +142,22 @@ function translate(src) {
   return out;
 }
 
+function relocateSkillLinks(text, src, outPath) {
+  return text.replace(/(\]\()((?:\.\.\/|\.\/)[^\s)#]+)(#[^\s)]*)?(\))/g,
+    (match, open, target, anchor = "", close) => {
+      const original = resolve(dirname(src), target);
+      for (const { dir, ns } of SOURCES) {
+        const rel = relative(join(root, dir, "skills"), original);
+        if (rel.startsWith("..") || rel.startsWith("/")) continue;
+        const [skill, ...parts] = rel.split("/");
+        if (EXCLUDE.has(`${dir}/${skill}`) || !existsSync(original)) continue;
+        const installed = join(dist, "skills", `${ns}-${skill}`, ...parts);
+        return open + relative(dirname(outPath), installed) + anchor + close;
+      }
+      return match;
+    });
+}
+
 function walk(dir, out = []) {
   if (!existsSync(dir)) return out;
   for (const e of readdirSync(dir)) {
@@ -167,23 +188,24 @@ for (const { dir, ns } of SOURCES) {
     if (EXCLUDE.has(`${dir}/${skillName}`)) continue;
     const outRel = join("skills", `${ns}-${skillName}`, rel.split("/").slice(1).join("/") || "SKILL.md");
     const outPath = join(dist, outRel);
+    const ovr = join(portDir, "overrides", ns, rel);
+    const isOverride = existsSync(ovr);
+    if (isOverride) overrides++;
 
     // non-prose: copy bytes, preserve the exec bit, never translate
     if (!TRANSLATABLE.test(src)) {
       verbatim++; files++;
-      emit(outRel, readFileSync(src), statSync(src).mode & 0o777);
+      const copied = isOverride ? ovr : src;
+      emit(outRel, readFileSync(copied), statSync(src).mode & 0o777);
       try {
-        const t = readFileSync(src, "utf8");
+        const t = readFileSync(copied, "utf8");
         if (/\.cursor\/|cursor\.sh|Cursor/i.test(t)) advisory.push(outRel);
       } catch { /* binary */ }
       continue;
     }
 
     // overrides win verbatim — that's where judgment lives, not in the rules
-    const ovr = join(portDir, "overrides", ns, rel);
-    let text, isOverride = false;
-    if (existsSync(ovr)) { text = readFileSync(ovr, "utf8"); isOverride = true; overrides++; }
-    else text = translate(readFileSync(src, "utf8"));
+    let text = isOverride ? readFileSync(ovr, "utf8") : translate(readFileSync(src, "utf8"));
 
     if (src.endsWith("SKILL.md")) {
       skills++;
@@ -208,7 +230,9 @@ for (const { dir, ns } of SOURCES) {
     if (!isOverride) violations.push(...guard(text, outRel));
     text = text.replaceAll("references/host-delegation.md",
       relative(dirname(outPath), join(dist, "references/host-delegation.md")));
-    if (src.endsWith(".md")) text = text.replace(/\n+$/, "\n");
+    if (src.endsWith(".md")) {
+      text = relocateSkillLinks(text, src, outPath).replace(/\n+$/, "\n");
+    }
     files++;
     emit(outRel, text, statSync(src).mode & 0o777);
   }
