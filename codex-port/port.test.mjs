@@ -56,7 +56,10 @@ test("the generated plugin contains the upstream release and its invocation poli
       const target = join(dist, "skills", `${namespace}-${skill}`, ...parts);
       assert.ok(existsSync(target), target);
       assert.equal(statSync(target).mode & 0o111, statSync(path).mode & 0o111, target);
-      if (!/\.(md|sh)$/.test(path)) assert.deepEqual(readFileSync(target), readFileSync(path), target);
+      if (!/\.(md|sh)$/.test(path)) {
+        const override = join(dir, "codex-port/overrides", namespace, skill, ...parts);
+        assert.deepEqual(readFileSync(target), readFileSync(existsSync(override) ? override : path), target);
+      }
       if (parts.join("/") === "SKILL.md") {
         skills++;
         const explicit = /^disable-model-invocation: true$/m.test(readFileSync(path, "utf8"));
@@ -71,6 +74,11 @@ test("the generated plugin contains the upstream release and its invocation poli
   for (const name of ["attack-the-premise", "test-behavior-not-implementation"]) {
     assert.ok(existsSync(join(dist, `skills/pstack-principle-${name}/SKILL.md`)));
   }
+  for (const name of ["benchmark-checklist", "correct", "ketchup", "poteto-help", "principle-explain-the-number"]) {
+    const skill = join(dist, `skills/pstack-${name}`);
+    assert.ok(existsSync(join(skill, "SKILL.md")));
+    assert.match(readFileSync(join(skill, "agents/openai.yaml"), "utf8"), /allow_implicit_invocation: false/);
+  }
   for (const name of ["critic-prompt", "critique-rubric"]) {
     assert.ok(!existsSync(join(dist, `skills/pstack-how/references/${name}.md`)));
   }
@@ -79,8 +87,16 @@ test("the generated plugin contains the upstream release and its invocation poli
     for (const match of text.matchAll(/(?:\.\.\/)*references\/host-delegation\.md/g)) {
       assert.ok(existsSync(resolve(dirname(path), match[0])), `${path}: ${match[0]}`);
     }
-    assert.doesNotMatch(text, /subagent subagent|\$team-kit:|claude-fable-5(?:-1)?-thinking-max/);
+    for (const match of text.matchAll(/\]\(((?:\.\.\/|\.\/)[^\s)#]+)(?:#[^\s)]*)?\)/g)) {
+      assert.ok(existsSync(resolve(dirname(path), match[1])), `${path}: ${match[1]}`);
+    }
+    assert.doesNotMatch(text, /subagent subagent|\$team-kit:|claude-fable-5(?:-1)?-thinking-max|claude-opus-5-5-xhigh|grok-4\.7-xhigh-fast|pstack-models\.mdc/);
   }
+  const help = readFileSync(join(dist, "skills/pstack-poteto-help/SKILL.md"), "utf8");
+  assert.match(help, /\.\.\/pstack-ketchup\/SKILL\.md/);
+  assert.doesNotMatch(help, /Custom Mode|\/add-plugin|\.\.\/make-bot-ui\/|\.\.\/\.\.\/docs\/guide/);
+  const rationale = readFileSync(join(dist, "skills/pstack-architect/references/rationale-template.md"), "utf8");
+  assert.match(rationale, /\.\.\/\.\.\/pstack-arena\/SKILL\.md/);
   const before = snapshot(dist);
   assert.equal(run(dir, "--check").status, 0);
   built(dir);
@@ -117,4 +133,25 @@ test("unknown upstream host dependencies fail without replacing the installed ar
     assert.match(result.stderr, /unported Cursor reference/);
     assert.deepEqual(snapshot(dist), before);
   }
+});
+
+test("the installed decision-log helper appends without losing earlier evidence", (t) => {
+  const dir = fixture(t);
+  const dist = built(dir);
+  const log = join(dir, "decisions.tsv");
+  writeFileSync(log, "");
+  const helper = join(dist, "skills/pstack-show-me-your-work/scripts/log.sh");
+  const append = (phase, decision) => {
+    const result = spawnSync(helper, [log, phase, decision, "why", "evidence", "verified"], { encoding: "utf8" });
+    assert.equal(result.status, 0, result.stderr);
+  };
+  append("start", "first run");
+  const before = readFileSync(log, "utf8");
+  append("audit", "=correction\twith\nnewlines");
+  const after = readFileSync(log, "utf8");
+  assert.ok(after.startsWith(before));
+  const rows = after.trimEnd().split("\n");
+  assert.equal(rows.length, 3);
+  assert.equal(rows[0], "ts\tphase\tdecision\twhy\tevidence\tresult");
+  assert.deepEqual(rows[2].split("\t").slice(1), ["audit", "'=correction with newlines", "why", "evidence", "verified"]);
 });
