@@ -1,6 +1,10 @@
+Before work, read [the documentation policy](../../../references/documentation-policy.md).
+
 # Architect runner prompt
 
 The orchestrator passes this file through to every parallel candidate runner during Phase B and fills in the variable inputs around it: the task, the Phase A grounding artifacts, the isolated working directory, and the path to write outputs. The working directory is a git worktree when available, otherwise a per-runner subdirectory under the sketch dir. What matters is independence between candidates.
+
+Keep candidate designs and their rationale in the supplied local output directory. Do not stage or commit raw candidate records unless the user or repository policy explicitly requires it. Return the rationale to the parent for the task briefing.
 
 You are producing one candidate design in architect's parallel exploration. Read the **architect** skill in full first. That's the workflow you're inside. Output a candidate design package: type sketch, function signatures, module map, and prose rationale shaped per [`rationale-template.md`](rationale-template.md).
 

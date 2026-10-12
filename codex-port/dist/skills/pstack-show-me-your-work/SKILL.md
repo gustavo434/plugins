@@ -1,9 +1,11 @@
 ---
 name: show-me-your-work
-description: "Keep a reviewable decision trail for long-running or unattended work: a TSV log with one row per decision (what, why, evidence, result). Local by default; commit it when a reviewer needs the trail to trust the result. Use for /show-me-your-work, autonomous or multi-phase runs, or work a human reviews after stepping away."
+description: "Keep a reviewable decision trail for long-running or unattended work: a TSV log with one row per decision (what, why, evidence, result). Local by default; commit raw records only when the user or repository policy explicitly requires them. Use for /show-me-your-work, autonomous or multi-phase runs, or work a human reviews after stepping away."
 ---
 
 Before choosing models or delegating, read [Codex host guidance](../../references/host-delegation.md).
+
+Before work, read [the documentation policy](../../references/documentation-policy.md).
 
 # Show me your work
 
@@ -44,9 +46,9 @@ A run is one agent conversation, including its later turns and any summary of it
 
 ## Where it lives
 
-By default the log is a working artifact, not committed. Keep it at `decisions.tsv` in the work dir, or `.audit/<task-slug>.tsv` when several efforts run at once, and leave it out of git.
+Keep the log in the existing local agent store, or outside the repository under `~/.codex/pstack/work/<task-slug>/decisions.tsv`. Existing untracked logs may stay in place if kept out of commits. Preserve them for pickup and audit.
 
-Commit it only when the work is ambitious enough that a reviewer needs the trail to trust the result.
+Put task-specific reasoning, rejected alternatives, and verification summaries in the ticket or PR/MR body, or the final response when neither exists. Commit the raw log only when the user or repository policy explicitly requires it. Apply the documentation policy before staging it.
 
 ## Rules
 
@@ -80,6 +82,9 @@ and `auto` cannot satisfy the different-family requirement. If no eligible
 reviewer is available, report the final audit as unavailable instead of silently
 downgrading or claiming it happened.
 
+Give the reviewer the documentation policy's installed absolute path and require
+it to read the policy first. Include the policy text if that path is inaccessible.
+The trail and review receipt stay local unless explicitly required to be tracked.
 Spawn that reviewer to read the audit trail and the run's transcript, follow
 evidence pointers, and flag what the user should pay attention to. Self-review
 is not a substitute. This audits decisions and verification evidence; it does
@@ -94,7 +99,7 @@ Every reply for a run that produced a trail ends with an "Attention" section. Le
 
 ## Reviewing the trail
 
-Read top to bottom, follow the evidence pointers, spot-check. GitHub renders a committed TSV as a table. `column -s$'\t' -t decisions.tsv` renders it in a terminal.
+Read the local log top to bottom, follow the evidence pointers, and spot-check. `column -s$'\t' -t <logfile>` renders it in a terminal. Tracking is unnecessary for audit review.
 
 ## Composing this skill
 

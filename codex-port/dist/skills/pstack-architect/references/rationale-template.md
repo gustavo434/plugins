@@ -1,6 +1,6 @@
 # Rationale template
 
-The prose that ships alongside the type sketch. One page. Sentence-case headings, no boilerplate. Replace the italic notes with actual content.
+Read [the documentation policy](../../../references/documentation-policy.md) before choosing the destination. Use this shape for a task briefing in the ticket or PR/MR body, or the final response when neither exists. A lasting architecture reference can be tracked after identifying its concrete future use or explicit requirement. Keep candidate rationale local. Aim for one page with sentence-case headings and no boilerplate. Replace the italic notes with actual content.
 
 ## Problem
 

@@ -105,7 +105,7 @@ The fixture exercises the plan checker. It does not claim application verificati
 test("the generated plan checker validates Codex plans", async (t) => {
   const dir = mkdtempSync(join(port, ".test-plan-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  for (const path of ["pstack", "cursor-team-kit", ...["port.mjs", "runners.json", "allow.txt", "host-delegation.md", "overrides"].map((name) => `codex-port/${name}`)]) {
+  for (const path of ["pstack", "cursor-team-kit", ...["port.mjs", "runners.json", "allow.txt", "host-delegation.md", "documentation-policy.md", "overrides"].map((name) => `codex-port/${name}`)]) {
     cpSync(join(root, path), join(dir, path), { recursive: true });
   }
   const build = spawnSync(process.execPath, [join(dir, "codex-port/port.mjs")], { encoding: "utf8" });

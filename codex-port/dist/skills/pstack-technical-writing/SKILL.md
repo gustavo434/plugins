@@ -3,6 +3,8 @@ name: technical-writing
 description: "Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages."
 ---
 
+Before work, read [the documentation policy](../../references/documentation-policy.md).
+
 # Technical writing
 
 Write so a tired engineer understands on the first read. Apply all four layers.
@@ -27,6 +29,8 @@ A doc can obey every layer and still read machine-written: every sentence clippe
 - Be specific over sterile. Not "schema changes can cause issues" but "a column rename fails the build".
 
 ## Pick the mode first (Diátaxis)
+
+Choose the destination under the documentation policy before creating a file. Prefer updating an existing lasting reference. Formatting guidance does not require creating a tracked document.
 
 One document, one mode. Two questions pick it: does the content inform action (doing) or understanding (thinking), and does it serve learning or work?
 
@@ -90,7 +94,7 @@ Don't mix modes: no reference tables inside a tutorial, no tutorial hand-holding
 ## Voice and repo specifics
 
 - Apply the **unslop** skill to every doc this skill touches. That skill owns the slop-pattern catalog: AI vocabulary, filler, hedging, formatting tells.
-- PR descriptions and commit messages are writing too. Every layer except Diátaxis applies to them. A PR body is a briefing that a reviewer can read in under a minute. Do not paste swarm logs, SHA lists, or metric tables. Link them.
+- PR descriptions and commit messages are writing too. Every layer except Diátaxis applies to them. A PR/MR body is a concise briefing with task-specific reasoning, relevant rejected alternatives, and verification summaries. Keep raw swarm logs and review receipts local. Link existing evidence when reviewers can access it. Preserve required QA reports and metric histories in their established locations. Do not create a tracked task notebook to shorten the body.
 - Product UI strings are not documentation. Use your product's copy guidelines for those.
 - Indent code snippets with tabs. Write real paths. Make every count or tree claim true at the commit that lands it, and include the command that regenerates it.
 

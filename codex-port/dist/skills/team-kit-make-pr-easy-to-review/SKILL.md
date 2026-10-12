@@ -3,6 +3,8 @@ name: make-pr-easy-to-review
 description: Prepare PRs for review by cleaning noisy history, improving PR descriptions, and adding reviewer guidance without changing code behavior. Use for "make this easy to review", "tidy this PR", "clean up commits", or "annotate the diff".
 ---
 
+Before work, read [the documentation policy](../../references/documentation-policy.md).
+
 # Make PR Easy to Review
 
 Prepare a PR so a reviewer can quickly understand the intent, important files, and risk. The default goal is reviewability without behavior changes.
@@ -50,7 +52,7 @@ When code behavior should stay untouched, prefer PR description and review notes
 - Add a TL;DR that matches the actual diff.
 - Separate core files from generated or mechanical files.
 - Call out risky behavior changes, migration order, rollout plan, and test coverage.
-- Link issue trackers, dashboards, or design docs when they explain intent.
+- Put task-specific reasoning, relevant rejected alternatives, and verification summaries in the PR/MR body. Link existing issue trackers, dashboards, or lasting design references when they explain intent. Keep raw review receipts local. Do not create a tracked task document just to make the PR easier to review.
 
 ## Guardrails
 

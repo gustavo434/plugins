@@ -142,6 +142,16 @@ function translate(src) {
   return out;
 }
 
+const SHARED_REFERENCES = ["host-delegation.md", "documentation-policy.md"];
+
+function relocateSharedReferences(text, outPath) {
+  for (const name of SHARED_REFERENCES) {
+    text = text.replaceAll(`references/${name}`,
+      relative(dirname(outPath), join(dist, "references", name)));
+  }
+  return text;
+}
+
 function relocateSkillLinks(text, src, outPath) {
   return text.replace(/(\]\()((?:\.\.\/|\.\/)[^\s)#]+)(#[^\s)]*)?(\))/g,
     (match, open, target, anchor = "", close) => {
@@ -228,8 +238,7 @@ for (const { dir, ns } of SOURCES) {
     }
 
     if (!isOverride) violations.push(...guard(text, outRel));
-    text = text.replaceAll("references/host-delegation.md",
-      relative(dirname(outPath), join(dist, "references/host-delegation.md")));
+    text = relocateSharedReferences(text, outPath);
     if (src.endsWith(".md")) {
       text = relocateSkillLinks(text, src, outPath).replace(/\n+$/, "\n");
     }
@@ -257,14 +266,18 @@ emit(".codex-plugin/plugin.json", JSON.stringify({
 }, null, 2) + "\n");
 emit("assets/logo.png", readFileSync(join(root, "pstack", upstream.logo)));
 emit("LICENSE", readFileSync(join(root, "pstack/LICENSE")));
-for (const name of ["host-delegation.md", "runners.json"]) {
+for (const name of [...SHARED_REFERENCES, "runners.json"]) {
   emit(join("references", name), readFileSync(join(portDir, name)));
 }
 for (const src of walk(join(root, "pstack/agents"))) {
-  const outRel = join("references/agents", relative(join(root, "pstack/agents"), src));
-  const text = translate(readFileSync(src, "utf8"));
-  violations.push(...guard(text, outRel));
-  emit(outRel, text);
+  const rel = relative(join(root, "pstack/agents"), src);
+  const outRel = join("references/agents", rel);
+  const ovr = join(portDir, "overrides/agents", rel);
+  const isOverride = existsSync(ovr);
+  if (isOverride) overrides++;
+  const text = isOverride ? readFileSync(ovr, "utf8") : translate(readFileSync(src, "utf8"));
+  if (!isOverride) violations.push(...guard(text, outRel));
+  emit(outRel, relocateSharedReferences(text, join(dist, outRel)));
 }
 
 console.log(`${files} files · ${skills} skills · ${verbatim} copied verbatim · ${overrides} from overrides`);

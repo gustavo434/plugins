@@ -5,6 +5,8 @@ description: "Sketch types, signatures, and module structure before code, then s
 
 Before choosing models or delegating, read [Codex host guidance](../../references/host-delegation.md).
 
+Before work, read [the documentation policy](../../references/documentation-policy.md).
+
 # Architect
 
 Sketch types, function signatures, class shapes, and module boundaries with `not implemented` bodies and pseudocode. Synthesize across multiple model perspectives, then fill in code against the chosen sketch.
@@ -45,7 +47,7 @@ Default: proceed directly to implementation with the synthesized design. No huma
 
 Opt in to a checkpoint when the invoker explicitly asks: "/architect with checkpoint," "stop and show me before implementing," or similar. Then surface the synthesized design and pause for sign-off.
 
-The synthesis can ship as its own commit either way, as the "scaffold first" mode of the **foundational-thinking** principle skill. Planned and scoped breakage during fill-in is fine, per the **outcome-oriented-execution** principle skill. For adversarial pressure on the design before implementing, run the **interrogate** skill on the synthesized sketch.
+The code scaffold can ship as its own commit either way. Documentation follows the documentation policy and needs a concrete future use or explicit tracking requirement. This is the "scaffold first" mode of the **foundational-thinking** principle skill. Planned and scoped breakage during fill-in is fine, per the **outcome-oriented-execution** principle skill. For adversarial pressure on the design before implementing, run the **interrogate** skill on the synthesized sketch.
 
 If the human pushes back on the shape (in a checkpoint or after the fact), treat that as Phase A evidence. Re-ground and re-run Phase B before writing more code.
 
@@ -77,4 +79,4 @@ When you scrap:
 
 ## Outputs
 
-The caller's usage is written first and the type sketch derived from it. One file with new types and signatures for small changes. Module map plus type definitions for larger work. The rationale ships alongside, shaped per `references/rationale-template.md`, including the usage sketch and the synthesis decision.
+The caller's usage is written first and the type sketch derived from it. One file with new types and signatures for small changes. Module map plus type definitions for larger work. Shape the rationale per `references/rationale-template.md`, including the usage sketch and synthesis decision. Task-specific rationale belongs in the ticket or PR/MR body, or the final response when neither exists. Keep candidate packages local. Update an existing architecture reference when the chosen design has a concrete future maintenance use, or when tracking is explicitly required. Apply the documentation policy before committing it.

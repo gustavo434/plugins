@@ -11,7 +11,7 @@ const root = dirname(port);
 function fixture(t) {
   const dir = mkdtempSync(join(port, ".test-"));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
-  for (const path of ["pstack", "cursor-team-kit", ...["port.mjs", "runners.json", "allow.txt", "host-delegation.md", "overrides"].map((name) => `codex-port/${name}`)]) {
+  for (const path of ["pstack", "cursor-team-kit", ...["port.mjs", "runners.json", "allow.txt", "host-delegation.md", "documentation-policy.md", "overrides"].map((name) => `codex-port/${name}`)]) {
     cpSync(join(root, path), join(dir, path), { recursive: true });
   }
   return dir;
@@ -119,6 +119,76 @@ test("check detects stale content, extra files, and a missing executable bit", (
   assert.ok(executable);
   chmodSync(executable, 0o644);
   assert.equal(run(dir, "--check").status, 1);
+});
+
+test("documentation entrypoints and workers load one bundled policy from every depth", (t) => {
+  const dir = fixture(t);
+  const dist = built(dir);
+  const policy = join(dist, "references/documentation-policy.md");
+  assert.deepEqual(readFileSync(policy), readFileSync(join(dir, "codex-port/documentation-policy.md")));
+  assert.deepEqual(files(dist).filter((path) => path.endsWith("/documentation-policy.md")), [policy]);
+
+  const entrypoints = [
+    ...["poteto-mode", "show-me-your-work", "figure-it-out", "architect", "technical-writing"]
+      .map((skill) => `skills/pstack-${skill}/SKILL.md`),
+    ...["review-and-ship", "new-branch-and-pr", "make-pr-easy-to-review"]
+      .map((skill) => `skills/team-kit-${skill}/SKILL.md`),
+    "skills/pstack-poteto-mode/playbooks/opening-a-pr.md",
+    "skills/pstack-poteto-mode/playbooks/pause-safely.md",
+    "skills/pstack-poteto-mode/playbooks/hillclimb.md",
+    "skills/pstack-poteto-mode/playbooks/autopilot-full.md",
+    "skills/pstack-poteto-mode/playbooks/autopilot-stack.md",
+    "skills/pstack-architect/references/runner-prompt.md",
+    "skills/pstack-architect/references/rationale-template.md",
+    "references/agents/poteto-agent.md",
+    "references/host-delegation.md",
+  ];
+  for (const entrypoint of entrypoints) {
+    const path = join(dist, entrypoint);
+    const text = readFileSync(path, "utf8");
+    const links = [...text.matchAll(/\]\(([^\s)]*documentation-policy\.md)\)/g)];
+    assert.equal(links.length, 1, `${entrypoint} must load the shared policy`);
+    assert.equal(resolve(dirname(path), links[0][1]), policy, entrypoint);
+    if (entrypoint.endsWith("SKILL.md")) {
+      assert.ok(text.indexOf(links[0][0]) < text.indexOf("## ") || !text.includes("## "), entrypoint);
+    }
+  }
+
+  for (const path of files(dist).filter((path) => path.endsWith(".md"))) {
+    const text = readFileSync(path, "utf8");
+    assert.doesNotMatch(text, /ambitious enough to commit|work is ambitious enough|rationale ships alongside|prose that ships alongside|Commit it when stakes need|commit it when a reviewer needs|Keep it out of the tree \(gitignored\)|Keep `decisions.tsv` uncommitted and|Keep the trail uncommitted and/i, path);
+    for (const match of text.matchAll(/\]\(([^\s)]*documentation-policy\.md)\)/g)) {
+      assert.equal(resolve(dirname(path), match[1]), policy, path);
+    }
+  }
+
+  const host = readFileSync(join(dist, "references/host-delegation.md"), "utf8");
+  assert.match(host, /require the worker to read it/);
+  assert.match(host, /include the policy text in the prompt/);
+  assert.match(host, /separate CLI runners/);
+  const audit = readFileSync(join(dist, "skills/pstack-show-me-your-work/SKILL.md"), "utf8");
+  assert.match(audit, /audit never edits or removes a row/);
+  assert.match(audit, /first available entry from a different\nmodel family/);
+  assert.match(audit, /reviewer.*policy's installed absolute path/);
+  assert.match(audit, /review receipt stay local/);
+});
+
+test("policy edits trigger drift detection and rebuild without modifying upstream", (t) => {
+  const dir = fixture(t);
+  const dist = built(dir);
+  const upstream = [snapshot(join(dir, "pstack")), snapshot(join(dir, "cursor-team-kit"))];
+  const before = snapshot(dist);
+  const source = join(dir, "codex-port/documentation-policy.md");
+  const changed = readFileSync(source, "utf8") + "\nA repository may require a tracked release QA report.\n";
+  writeFileSync(source, changed);
+  const stale = run(dir, "--check");
+  assert.equal(stale.status, 1);
+  assert.match(stale.stderr, /references\/documentation-policy.md/);
+  assert.deepEqual(snapshot(dist), before);
+  built(dir);
+  assert.equal(readFileSync(join(dist, "references/documentation-policy.md"), "utf8"), changed);
+  assert.equal(run(dir, "--check").status, 0);
+  assert.deepEqual([snapshot(join(dir, "pstack")), snapshot(join(dir, "cursor-team-kit"))], upstream);
 });
 
 test("unknown upstream host dependencies fail without replacing the installed artifact", (t) => {

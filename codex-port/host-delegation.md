@@ -16,6 +16,13 @@ Pass the scope, file paths, expected output, and whether the worker may edit.
 A request for read-only work in a prompt is not a filesystem sandbox. If the
 work needs enforced read-only access, use a runner with that sandbox.
 
+Before spawning any worker, read [the documentation policy](documentation-policy.md).
+Give each worker its absolute installed path and require the worker to read it
+before work. If that path is inaccessible, include the policy text in the prompt.
+This includes implementation workers, architects, reviewers, audit reviewers,
+and separate CLI runners. Pass applicable user and repository requirements too.
+Keep plans, logs, and review receipts in the existing local store by default.
+
 Named upstream workers are prompt templates, not registered Codex agent types:
 
 | Worker | Prompt template |

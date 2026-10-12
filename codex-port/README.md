@@ -38,6 +38,8 @@ If upstream introduces a host dependency, add either:
   Frontmatter conversion and shared-reference relocation still apply. Review
   upstream changes to overridden files on every update; overrides replace the
   whole file and do not inherit those changes automatically.
+- An override in `overrides/agents/<path>` for a bundled worker prompt. These
+  use the same precedence and shared-reference relocation as skill overrides.
 
 Translated Markdown and shell files pass the host guard. Other files are copied
 byte for byte from upstream or an explicit override, with their upstream executable
@@ -50,6 +52,27 @@ The regression tests build the actual upstream tree in an isolated fixture.
 They check file coverage, invocation policy, executable permissions, bundled
 resources, repeatable generation, stale output detection, and preservation of
 the previous build when a new host dependency is rejected.
+
+## Documentation policy
+
+[documentation-policy.md](documentation-policy.md) is the shared source. The
+generator bundles one copy at `dist/references/documentation-policy.md` and
+relocates `references/documentation-policy.md` links from skill overrides and
+worker prompts. It travels with the plugin in both Codex desktop and CLI.
+It does not depend on personal runner settings or a rule installed separately.
+
+Poteto Mode, Show Me Your Work, Figure It Out, Architect, technical writing,
+and the commit and PR entrypoints read it before work. Host delegation requires
+every worker, including CLI reviewers, to read its installed absolute path or
+receive its text when that path is inaccessible. Worker and audit prompts carry
+the same requirement. Review these overrides against upstream on updates.
+
+Task reasoning and verification summaries belong in the ticket or PR/MR body,
+or the final response when neither exists. Plans, logs, and audit receipts stay
+local by default. Before tracking documentation, identify its concrete future
+maintenance or operational use, or an explicit user or repository requirement.
+Raw working records need an explicit tracking requirement. Required public and
+API docs, QA reports, and metric histories keep their existing workflows.
 
 ## Changes in 0.15.17
 
@@ -112,12 +135,61 @@ codex plugin marketplace add /absolute/path/to/plugins/codex-port
 codex plugin add pstack@pstack-port
 ```
 
-For a configured local marketplace, rebuild and run the add command again.
-Use `codex plugin list --marketplace pstack-port` to verify the installed version.
-For same-version local iterations, the plugin-creator skill's
-`update_plugin_cachebuster.py codex-port/dist` helper adds a temporary cachebuster
-before reinstalling. Regenerate afterward to restore the committed release
-manifest. Start a new Codex task to load the refreshed skills.
+On **each computer**, first make these source changes available in its local
+checkout. Use that computer's plugin-capable binary and configured Codex home.
+For this machine:
+
+```sh
+cd /Users/gustavo/Documents/GitHub/plugins
+PSTACK_CODEX=/Users/gustavo/.codex/plugins/.plugin-appserver/codex-cli/bin/codex
+"$PSTACK_CODEX" plugin --help
+node codex-port/port.mjs
+```
+
+On another computer, change the `cd` path and set `PSTACK_CODEX` to its verified
+plugin-capable `codex` executable. If `codex` on PATH supports `plugin`, use
+`PSTACK_CODEX="$(command -v codex)"`. If the local marketplace is not registered,
+run `"$PSTACK_CODEX" plugin marketplace add "$PWD/codex-port"` first.
+
+For same-version local iterations, preserve the existing cachebuster procedure.
+Set `PSTACK_CACHEBUSTER` to that installation's actual
+`plugin-creator/scripts/update_plugin_cachebuster.py` path. The helper adds a
+temporary cachebuster before reinstalling:
+
+```sh
+python3 "$PSTACK_CACHEBUSTER" codex-port/dist
+"$PSTACK_CODEX" plugin add pstack@pstack-port
+node codex-port/port.mjs
+node codex-port/port.mjs --check
+"$PSTACK_CODEX" plugin list --marketplace pstack-port
+```
+
+Regeneration restores the release manifest. Do not commit the temporary
+cachebuster or hand-edit the installed cache. If reinstalling fails, regenerate
+before retrying. The helper is supplied by plugin-creator, not by this port.
+If it is unavailable, clear and reinstall this plugin through the supported CLI
+instead of manually editing cache files:
+
+```sh
+"$PSTACK_CODEX" plugin remove pstack@pstack-port
+"$PSTACK_CODEX" plugin add pstack@pstack-port
+"$PSTACK_CODEX" plugin list --marketplace pstack-port
+```
+
+Version `0.15.17` alone does not prove that a same-version refresh took effect.
+With the default Codex home and this release, compare the installed policy:
+
+```sh
+PSTACK_CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+cmp codex-port/documentation-policy.md \
+  "$PSTACK_CODEX_HOME/plugins/cache/pstack-port/pstack/0.15.17/references/documentation-policy.md"
+```
+
+Start a **fresh Codex desktop chat and a fresh Codex CLI session** after the
+refresh. Existing sessions retain their loaded instructions. When desktop and
+CLI share the same Codex home, one reinstall covers their shared plugin cache.
+If they use separate homes, repeat the refresh for each. These instructions do
+not imply that another computer or either running session has been updated.
 
 Skill directories use `pstack-*` and `team-kit-*` prefixes. Both sets belong to
 plugin `pstack`, so an explicit invocation uses names such as `$pstack:how` or
