@@ -74,7 +74,9 @@ test("the generated plugin contains the upstream release and its invocation poli
   for (const name of ["attack-the-premise", "test-behavior-not-implementation"]) {
     assert.ok(existsSync(join(dist, `skills/pstack-principle-${name}/SKILL.md`)));
   }
-  for (const name of ["benchmark-checklist", "correct", "ketchup", "poteto-help", "principle-explain-the-number"]) {
+  for (const name of ["benchmark-checklist", "correct", "ketchup", "poteto-help", "principle-explain-the-number",
+    "create-formal-verification-skill", "maintain-formal-verification-skill", "in-your-own-words",
+    "ketchup-video", "sharpen", "statechart"]) {
     const skill = join(dist, `skills/pstack-${name}`);
     assert.ok(existsSync(join(skill, "SKILL.md")));
     assert.match(readFileSync(join(skill, "agents/openai.yaml"), "utf8"), /allow_implicit_invocation: false/);
@@ -95,6 +97,11 @@ test("the generated plugin contains the upstream release and its invocation poli
   const help = readFileSync(join(dist, "skills/pstack-poteto-help/SKILL.md"), "utf8");
   assert.match(help, /\.\.\/pstack-ketchup\/SKILL\.md/);
   assert.doesNotMatch(help, /Custom Mode|\/add-plugin|\.\.\/make-bot-ui\/|\.\.\/\.\.\/docs\/guide/);
+  for (const skill of ["arena", "interrogate"]) {
+    const text = readFileSync(join(dist, `skills/pstack-${skill}/SKILL.md`), "utf8");
+    assert.match(text, /Codex model families exposed by the host/);
+    assert.doesNotMatch(text, /(?:claude|grok|composer)-\*/);
+  }
   const rationale = readFileSync(join(dist, "skills/pstack-architect/references/rationale-template.md"), "utf8");
   assert.match(rationale, /\.\.\/\.\.\/pstack-arena\/SKILL\.md/);
   const before = snapshot(dist);

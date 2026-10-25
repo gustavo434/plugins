@@ -134,4 +134,63 @@ test("the generated plan checker validates Codex plans", async (t) => {
     assert.equal(result.status, 1);
     assert.match(result.stderr, /with the model filled in/);
   });
+
+  await t.test("accepts ordinary, indented, and longer closing fences", () => {
+    for (const indent of ["", " ", "  ", "   "]) {
+      const result = check(plan + `${indent}\`\`\`markdown\n## Example only\n${indent}\`\`\`\n`);
+      assert.equal(result.status, 0, result.stderr);
+    }
+    const result = check(plan + "```markdown\n## Example only\n````\n");
+    assert.equal(result.status, 0, result.stderr);
+  });
+
+  await t.test("accepts nested backticks and tilde info strings", () => {
+    for (const example of [
+      "````markdown\n```markdown\n## Example only\n```\n````\n",
+      "~~~markdown `info`\n## Example only\n ~~~\n",
+    ]) {
+      const result = check(plan + example);
+      assert.equal(result.status, 0, result.stderr);
+    }
+  });
+
+  await t.test("keeps mismatched, shorter, and suffixed closers inside the fence", () => {
+    for (const closer of ["~~~", "```", "``` info"]) {
+      const result = check(plan + `\`\`\`\`markdown\n${closer}\n## Example only\n\`\`\`\`\n`);
+      assert.equal(result.status, 0, result.stderr);
+    }
+  });
+
+  await t.test("rejects headings and prose outside a proper close", () => {
+    for (const suffix of ["  ", "\t"]) {
+      const result = check(plan + `\`\`\`markdown\n## Example only\n\`\`\`${suffix}\n## Example only\n`);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /"## Example only" after Close the program is not an appendix/);
+    }
+    const result = check(plan + "```markdown\nThis prose has a mid-sentence colon: inside code\n```\nThis prose has a mid-sentence colon: bad.\n");
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /mid-sentence colon/);
+  });
+
+  await t.test("rejects backtick info strings containing a backtick", () => {
+    const result = check(plan + "```markdown `invalid`\n## Example only\n```\n");
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /"## Example only" after Close the program is not an appendix/);
+  });
+
+  await t.test("ignores prose punctuation inside matching multi-backtick code spans", () => {
+    for (const count of [2, 3, 4]) {
+      const delimiter = "`".repeat(count);
+      const result = check(plan + `Use ${delimiter}echo \`x\`: “quoted” — example${delimiter}.\n`);
+      assert.equal(result.status, 0, result.stderr);
+    }
+  });
+
+  await t.test("checks prose following a multi-backtick span and unmatched delimiters", () => {
+    for (const example of ["Use ``echo `x`: y``. Bad: prose.\n", "Use ``unclosed: bad` here.\n"]) {
+      const result = check(plan + example);
+      assert.equal(result.status, 1);
+      assert.match(result.stderr, /mid-sentence colon/);
+    }
+  });
 });

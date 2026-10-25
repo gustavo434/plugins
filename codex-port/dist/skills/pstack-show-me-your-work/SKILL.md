@@ -80,7 +80,9 @@ audits require Astra or Sol at effort `high` or greater. Luna may
 provide a supplementary scan but cannot satisfy this review. `inherit-parent`
 and `auto` cannot satisfy the different-family requirement. If no eligible
 reviewer is available, report the final audit as unavailable instead of silently
-downgrading or claiming it happened.
+downgrading or claiming it happened. Pick the reviewer's reasoning effort and
+supported speed per the Subagents section of **poteto-mode**, while preserving
+the eligible family and minimum effort above.
 
 Give the reviewer the documentation policy's installed absolute path and require
 it to read the policy first. Include the policy text if that path is inaccessible.

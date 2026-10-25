@@ -1,0 +1,5 @@
+interface:
+  display_name: "in your own words"
+  short_description: "Apply in your own words guidance in Codex"
+policy:
+  allow_implicit_invocation: false

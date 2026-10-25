@@ -6,6 +6,8 @@ example that fits their question.
 ## Understand
 
 - `$pstack:poteto-mode read <issue>. Restate the underlying issue in plain words.`
+- `$pstack:in-your-own-words <long or messy ask>`
+- `$pstack:sharpen <the prompt you are about to send>`
 - `$pstack:poteto-mode investigate <symptom>. Explain what we know, the evidence, and the best hypotheses. Do not change code yet.`
 - `$pstack:how explain <subsystem>.`
 - `$pstack:why investigate why <behavior> changed recently.`
@@ -33,6 +35,7 @@ example that fits their question.
 ## Review and verify
 
 - `$pstack:interrogate review this branch for proven bugs and regressions. Do not change code yet.`
+- `$pstack:create-formal-verification-skill prove <property> holds in <module>, even when <steps> interleave or retry.` After changes to covered code, use `$pstack:maintain-formal-verification-skill`.
 - `$pstack:swarm check each package under <dir> with its documented command. Give each worker a package and return one report.`
 - `$pstack:poteto-mode open a PR with focused commits and verification evidence in the description.`
 - `$pstack:poteto-mode babysit this PR and get its checks green.`
