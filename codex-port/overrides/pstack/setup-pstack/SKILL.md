@@ -122,3 +122,9 @@ reads the new values. Re-running setup updates the same file.
 
 If the project lacks a way to exercise its real application, offer the installed
 `create-verification-skill` skill once. Only invoke it if the user accepts.
+
+If the project lacks a formal verification skill that runs a model checker,
+proof, or code-level verifier, offer the installed
+`create-formal-verification-skill` skill once. Explain that it verifies a key
+property within stated bounds and assumptions, including cases tests may miss.
+Only invoke it if the user accepts.

@@ -1,0 +1,5 @@
+interface:
+  display_name: "statechart"
+  short_description: "Apply statechart guidance in Codex"
+policy:
+  allow_implicit_invocation: false

@@ -32,6 +32,13 @@ Check state only when it changes the answer:
 - Missing project verification skills or an app harness matters when the user
   wants behavioral proof. Recommend
   [`create-verification-skill`](../create-verification-skill/SKILL.md).
+- Missing formal verification matters when the question concerns a race, an
+  invariant, or cases tests rarely reach. Recommend
+  [`create-formal-verification-skill`](../create-formal-verification-skill/SKILL.md).
+  If a formal verification skill exists and its covered code changed after its
+  recorded sync commit, recommend
+  [`maintain-formal-verification-skill`](../maintain-formal-verification-skill/SKILL.md)
+  when the question touches that code.
 
 ## Get set up
 
@@ -50,6 +57,8 @@ before giving an executable-specific command.
 reasoning efforts for each role. It writes `~/.codex/pstack-runners.md`, ordinary
 Markdown that the workflows read when choosing a model. The next invocation
 reads changed choices; this file is not an automatically loaded rule.
+Setup also offers once each to create a project verification skill and a formal
+verification skill when the project lacks one.
 
 For cost questions, explain that extra workers and review panels spend extra
 tokens. Fewer panel entries mean fewer workers. Smaller supported models or
@@ -86,11 +95,14 @@ give at most one example prompt.
 | The user wants to | Skill |
 | --- | --- |
 | Work through a substantial task with verification | [`poteto-mode`](../poteto-mode/SKILL.md) |
+| Check the agent's understanding of their goal before work begins | [`in-your-own-words`](../in-your-own-words/SKILL.md) |
+| Rewrite a prompt with deeper methods and an outside check, without doing the task | [`sharpen`](../sharpen/SKILL.md) |
 | Know how code works or where new code belongs | [`how`](../how/SKILL.md) |
 | Know why code is shaped this way or where a number came from | [`why`](../why/SKILL.md) |
 | Understand a change or subsystem in plain words | [`teach`](../teach/SKILL.md) |
 | Recover recent working context across their chats and shared records | [`recall`](../recall/SKILL.md) |
 | Catch up on this chat and its pending decisions | [`ketchup`](../ketchup/SKILL.md) |
+| Catch up in a short silent video, with pending decisions written below it | [`ketchup-video`](../ketchup-video/SKILL.md) |
 | Find what a small diff could break outside itself | [`blast-radius`](../blast-radius/SKILL.md) |
 | Settle types and module boundaries before implementation | [`architect`](../architect/SKILL.md) |
 | Compare attempts at one brief and combine the best parts | [`arena`](../arena/SKILL.md) |
@@ -104,6 +116,9 @@ give at most one example prompt.
 | Hear the last reply again in plain words | [`bro`](../bro/SKILL.md) |
 | Build a harness and feature map that prove app behavior | [`create-verification-skill`](../create-verification-skill/SKILL.md) |
 | Audit an existing verification skill against source and live behavior | [`maintain-verification-skill`](../maintain-verification-skill/SKILL.md) |
+| Formally verify a race, invariant, or other property tests rarely reach | [`create-formal-verification-skill`](../create-formal-verification-skill/SKILL.md) |
+| Update formal verification after code changes and distinguish drift from bugs | [`maintain-formal-verification-skill`](../maintain-formal-verification-skill/SKILL.md) |
+| Draw checked state transitions and bug paths, turn an agreed chart into a TLA+ skeleton, or audit code against a spec | [`statechart`](../statechart/SKILL.md) |
 | Vet a performance number before using it | [`benchmark-checklist`](../benchmark-checklist/SKILL.md) |
 | Organize a large change or work to review after stepping away | [`figure-it-out`](../figure-it-out/SKILL.md) |
 | Keep a decision log and review a completed run | [`show-me-your-work`](../show-me-your-work/SKILL.md) |

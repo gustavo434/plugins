@@ -91,9 +91,10 @@ const RULES = [
   ["askquestion", /`?\bAskQuestion\b`?/g, "the host's user-input tool"],
 
   // 4. models -> runner roles
+  ["composer-family-fallback", / A refused `composer-\*` entry runs on (?:`grok-4\.7-xhigh-fast`|Reviewer B's default)\./g, ""],
   ["m-grok47-fast", /`?grok-4\.7-xhigh-fast`?/g, () => role("fast")],
   ["m-opus55-xhigh", /`?claude-opus-5-5-xhigh`?/g, () => role("judgment")],
-  ["model-family-prefixes", /Families go by prefix: `claude-\*` and `grok-\*`\./g,
+  ["model-family-prefixes", /Families go by prefix: `claude-\*`,? and `grok-\*`(?: with `cursor-grok-\*` and `composer-\*`)?\./g,
     "Use the Codex model families exposed by the host, such as Sol, Astra, and Luna."],
   ["m-grok-fast", /`?grok-4\.6-fast-xhigh`?/g, () => role("fast")],
   ["m-fable-max", /`?claude-fable-5(?:-1)?-thinking-max`?/g, () => role("judgment")],

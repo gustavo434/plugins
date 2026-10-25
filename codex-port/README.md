@@ -1,8 +1,8 @@
 # codex-port
 
 Translates upstream pstack and cursor-team-kit into one installable Codex plugin.
-The current build follows **pstack 0.15.17** and includes 68 skills, synced from
-`cursor/plugins` commit `11713c683fe4add4fd403ea880580abbc9e0875f` on 2026-10-11.
+The current build follows **pstack 0.15.32** and includes 74 skills, synced from
+`cursor/plugins` commit `99b609a72323b70204eab407c622f436e858e112` on 2026-10-25.
 
 ## Upstream and local files
 
@@ -73,6 +73,18 @@ local by default. Before tracking documentation, identify its concrete future
 maintenance or operational use, or an explicit user or repository requirement.
 Raw working records need an explicit tracking requirement. Required public and
 API docs, QA reports, and metric histories keep their existing workflows.
+
+## Changes in 0.15.32
+
+- Adds `create-formal-verification-skill`, `maintain-formal-verification-skill`,
+  `in-your-own-words`, `ketchup-video`, `sharpen`, and `statechart`, preserving
+  their upstream explicit-invocation policies.
+- Carries forward upstream orchestration, PR watcher, worktree-audit, and
+  planning fixes. The Codex plan checker now handles CommonMark code fences
+  and inline code spans while retaining the Codex automation requirement.
+- Reconciles the workflow and help overrides with upstream while preserving
+  the bundled documentation policy and Codex runner configuration.
+- Updates model-family translation for upstream's expanded fallback guidance.
 
 ## Changes in 0.15.17
 
@@ -176,13 +188,13 @@ instead of manually editing cache files:
 "$PSTACK_CODEX" plugin list --marketplace pstack-port
 ```
 
-Version `0.15.17` alone does not prove that a same-version refresh took effect.
+Version `0.15.32` alone does not prove that a same-version refresh took effect.
 With the default Codex home and this release, compare the installed policy:
 
 ```sh
 PSTACK_CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 cmp codex-port/documentation-policy.md \
-  "$PSTACK_CODEX_HOME/plugins/cache/pstack-port/pstack/0.15.17/references/documentation-policy.md"
+  "$PSTACK_CODEX_HOME/plugins/cache/pstack-port/pstack/0.15.32/references/documentation-policy.md"
 ```
 
 Start a **fresh Codex desktop chat and a fresh Codex CLI session** after the
