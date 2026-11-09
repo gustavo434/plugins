@@ -101,7 +101,7 @@ give at most one example prompt.
 | Understand a change or subsystem in plain words | [`teach`](../pstack-teach/SKILL.md) |
 | Recover recent working context across their chats and shared records | [`recall`](../pstack-recall/SKILL.md) |
 | Catch up on this chat and its pending decisions | [`ketchup`](../pstack-ketchup/SKILL.md) |
-| Catch up in a short silent video, with pending decisions written below it | [`ketchup-video`](../pstack-ketchup-video/SKILL.md) |
+| Catch up in a short subtitled video, with pending decisions written below it | [`ketchup-video`](../pstack-ketchup-video/SKILL.md) |
 | Find what a small diff could break outside itself | [`blast-radius`](../pstack-blast-radius/SKILL.md) |
 | Settle types and module boundaries before implementation | [`architect`](../pstack-architect/SKILL.md) |
 | Compare attempts at one brief and combine the best parts | [`arena`](../pstack-arena/SKILL.md) |
@@ -117,7 +117,7 @@ give at most one example prompt.
 | Audit an existing verification skill against source and live behavior | [`maintain-verification-skill`](../pstack-maintain-verification-skill/SKILL.md) |
 | Formally verify a race, invariant, or other property tests rarely reach | [`create-formal-verification-skill`](../pstack-create-formal-verification-skill/SKILL.md) |
 | Update formal verification after code changes and distinguish drift from bugs | [`maintain-formal-verification-skill`](../pstack-maintain-formal-verification-skill/SKILL.md) |
-| Draw checked state transitions and bug paths, turn an agreed chart into a TLA+ skeleton, or audit code against a spec | [`statechart`](../pstack-statechart/SKILL.md) |
+| Show what the user sees as a chart checked by a TLA+ model, with the shortest path to each state that breaks a rule | [`statechart`](../pstack-statechart/SKILL.md) |
 | Vet a performance number before using it | [`benchmark-checklist`](../pstack-benchmark-checklist/SKILL.md) |
 | Organize a large change or work to review after stepping away | [`figure-it-out`](../pstack-figure-it-out/SKILL.md) |
 | Keep a decision log and review a completed run | [`show-me-your-work`](../pstack-show-me-your-work/SKILL.md) |
@@ -156,8 +156,8 @@ their own skill command. Describe the task, or name a playbook in the prompt:
 - "Babysit this PR" or "check on PR 123" selects Babysit.
 - "Take over this branch" selects Session pickup.
 - "Pause safely" selects Pause safely.
-- "Full autopilot on this queue" selects Autopilot-full; "stack them, don't
-  ship" selects Autopilot-stack.
+- "Full autopilot on this queue" selects Autopilot-full; "autopilot, don't
+  merge" selects Autopilot-stack.
 - "Run the eval playbook" selects Eval.
 - Asking for a plan across phases or ordered PRs selects
   [Multi-phase plan](../pstack-poteto-mode/playbooks/multi-phase-plan.md), which plans

@@ -34,7 +34,7 @@ ${rule}
 
 ### Arm the program
 
-- [ ] Read \`git show origin/main:docs/search.md\` before starting.
+- [ ] Read the installed Codex skills for poteto-mode and autopilot-full before starting.
 - [ ] Arm a Codex automation every hour to audit the active owners.
 - [ ] Send the operator a status message when the audit finds a meaningful change.
 
@@ -127,6 +127,12 @@ test("the generated plan checker validates Codex plans", async (t) => {
     const result = check(plan.replace("a Codex automation", "an audit reminder"));
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Program checklist lacks "Codex automation"/);
+  });
+
+  await t.test("rejects a plan without the installed workflow instructions", () => {
+    const result = check(plan.replace("Read the installed Codex skills", "Read the application docs"));
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Program checklist lacks "Read the installed Codex skills"/);
   });
 
   await t.test("rejects an unfilled worker model", () => {

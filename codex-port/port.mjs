@@ -47,6 +47,8 @@ const RULES = [
   // 2. delegation primitive -> single documented indirection (backticked forms before bare ones)
   ["sa-bt-general", /`subagent_type`: `generalPurpose`/g, "worker type: default (see references/host-delegation.md)"],
   ["sa-inline-general", /`subagent_type: generalPurpose`/g, "the default worker type"],
+  ["sa-as-general", /as `generalPurpose`/g, "using the default worker type"],
+  ["sa-general", /`generalPurpose`/g, "the default worker type"],
   ["sa-inline-quoted", /`subagent_type: "([^"]+)"`/g, "the `$1` worker"],
   ["sa-quoted", /subagent_type:\s*"([a-z0-9 -]+)"/gi, "the `$1` worker (see references/host-delegation.md)"],
   ["sa-bare", /`subagent_type`/g, "worker type"],
@@ -91,6 +93,8 @@ const RULES = [
   ["askquestion", /`?\bAskQuestion\b`?/g, "the host's user-input tool"],
 
   // 4. models -> runner roles
+  ["cross-judge-family", /With the default pool, a Claude parent gets `grok-4\.7-xhigh-fast`\. A parent from any other family gets `claude-opus-5-5-xhigh` first\./g,
+    "With the default pool, choose the entry from a different family than the parent's."],
   ["composer-family-fallback", / A refused `composer-\*` entry runs on (?:`grok-4\.7-xhigh-fast`|Reviewer B's default)\./g, ""],
   ["m-grok47-fast", /`?grok-4\.7-xhigh-fast`?/g, () => role("fast")],
   ["m-opus55-xhigh", /`?claude-opus-5-5-xhigh`?/g, () => role("judgment")],
@@ -112,6 +116,8 @@ const DENY = [
   [/\.mdc\b/, "Cursor .mdc rule file"],
   [/\b(?:claude|grok|gemini|llama|mistral|composer)-[a-z0-9.]+(?:-[a-z0-9]+)*\b/i, "non-Codex vendor model slug"],
   [/subagent_type/, "raw Cursor subagent primitive"],
+  [/generalPurpose/, "raw Cursor worker type"],
+  [/`Task`|Project tracker|Project store|cloud VM/, "unported Cursor orchestration surface"],
   [/agent-transcripts/, "Cursor transcript path"],
   [/Cursor's built-in/, "unmapped Cursor built-in"],
   [/\bCanvas\b/, "Cursor Canvas UI surface"],

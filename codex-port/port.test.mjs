@@ -97,11 +97,23 @@ test("the generated plugin contains the upstream release and its invocation poli
   const help = readFileSync(join(dist, "skills/pstack-poteto-help/SKILL.md"), "utf8");
   assert.match(help, /\.\.\/pstack-ketchup\/SKILL\.md/);
   assert.doesNotMatch(help, /Custom Mode|\/add-plugin|\.\.\/make-bot-ui\/|\.\.\/\.\.\/docs\/guide/);
-  for (const skill of ["arena", "interrogate"]) {
-    const text = readFileSync(join(dist, `skills/pstack-${skill}/SKILL.md`), "utf8");
-    assert.match(text, /Codex model families exposed by the host/);
-    assert.doesNotMatch(text, /(?:claude|grok|composer)-\*/);
-  }
+  const arena = readFileSync(join(dist, "skills/pstack-arena/SKILL.md"), "utf8");
+  assert.match(arena, /Codex model families exposed by the host/);
+  assert.match(arena, /choose the entry from a different family than the parent's/);
+  assert.doesNotMatch(arena, /(?:claude|grok|composer)-\*|Claude parent/);
+  const interrogate = readFileSync(join(dist, "skills/pstack-interrogate/SKILL.md"), "utf8");
+  assert.match(interrogate, /Phase A steps 3 and 4 and Phase B of the \*\*arena\*\* skill/);
+  assert.match(interrogate, /using the default worker type/);
+  assert.match(interrogate, /rerunning its command/);
+  assert.doesNotMatch(interrogate, /generalPurpose|(?:claude|grok|composer)-\*/);
+  assert.ok(!existsSync(join(dist, "skills/pstack-interrogate/references/reviewer-prompt.md")));
+  assert.ok(!existsSync(join(dist, "skills/pstack-poteto-mode/scripts/orch")));
+  assert.ok(!existsSync(join(dist, "skills/pstack-statechart/scripts/statechart.mjs")));
+  assert.ok(statSync(join(dist, "skills/pstack-statechart/scripts/statechart")).mode & 0o111);
+  assert.ok(existsSync(join(dist, "skills/pstack-statechart/scripts/statechart.ts")));
+  const orchestrate = readFileSync(join(dist, "skills/pstack-poteto-mode/playbooks/orchestrate.md"), "utf8");
+  assert.match(orchestrate, /native subagent tools/);
+  assert.doesNotMatch(orchestrate, /scripts\/orch|`Task`|Project tracker|Project store|cloud VM/);
   const rationale = readFileSync(join(dist, "skills/pstack-architect/references/rationale-template.md"), "utf8");
   assert.match(rationale, /\.\.\/\.\.\/pstack-arena\/SKILL\.md/);
   const before = snapshot(dist);
@@ -145,6 +157,8 @@ test("documentation entrypoints and workers load one bundled policy from every d
     "skills/pstack-poteto-mode/playbooks/hillclimb.md",
     "skills/pstack-poteto-mode/playbooks/autopilot-full.md",
     "skills/pstack-poteto-mode/playbooks/autopilot-stack.md",
+    "skills/pstack-poteto-mode/playbooks/orchestrate.md",
+    "skills/pstack-poteto-mode/playbooks/multi-phase-plan.md",
     "skills/pstack-architect/references/runner-prompt.md",
     "skills/pstack-architect/references/rationale-template.md",
     "references/agents/poteto-agent.md",
