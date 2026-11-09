@@ -50,9 +50,11 @@ Keep these role labels, which the workflows use:
 Drop configuration lines for retired roles, such as `how critics`, and list
 each dropped line when presenting the proposed configuration.
 
-Panel lists run one worker per entry. Alias entries also count. Arena selects
-one cross-judge from its pool, preferring a different model family from the
-parent. Swarm workers share a default unless a race assigns a model per arm.
+Panel lists run one worker per entry. Alias entries also count. Arena runs one
+cross-judge, trying only pool entries from a different model family than the
+parent, in list order. Order the pool by preference; `inherit-parent` and
+`auto` never judge. Swarm workers share a default unless a race assigns a
+model per arm.
 
 `final reviewer` is an ordered candidate pool, not a parallel panel. Default to
 `gpt-6-astra` at effort `medium` for Sol-owned runs (`high` otherwise), then

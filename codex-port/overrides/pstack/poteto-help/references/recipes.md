@@ -34,7 +34,7 @@ example that fits their question.
 
 ## Review and verify
 
-- `$pstack:interrogate review this branch for proven bugs and regressions. Do not change code yet.`
+- `$pstack:interrogate review this branch for proven bugs and regressions. Do not change code yet.` Read the Dropped list too.
 - `$pstack:create-formal-verification-skill prove <property> holds in <module>, even when <steps> interleave or retry.` After changes to covered code, use `$pstack:maintain-formal-verification-skill`.
 - `$pstack:swarm check each package under <dir> with its documented command. Give each worker a package and return one report.`
 - `$pstack:poteto-mode open a PR with focused commits and verification evidence in the description.`
@@ -49,6 +49,6 @@ example that fits their question.
 - `Set up a Codex automation to check <PR> every <interval> and address failing checks. Stop when <finish condition>. Notify me only on a meaningful change, completion, or required action.`
 - `$pstack:show-me-your-work catch me up on the run and its evidence.`
 - `$pstack:ketchup catch me up on this chat and the decisions waiting for me.`
-- `$pstack:poteto-mode work through this queue as ordered PRs. I will merge them.`
+- `$pstack:poteto-mode autopilot these changes, but don't merge. I will land them.`
 - `$pstack:reflect capture lessons that would change a future decision.`
 - `$pstack:bro explain the last reply in plain words.`

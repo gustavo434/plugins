@@ -20,7 +20,7 @@ ${rule}
 ### PR mechanics
 ### Verdict and merge
 ### Boot recipe
-\`git show origin/main:\` Codex automation every hour status message
+Read the installed Codex skills. Codex automation every hour status message
 
 ## PR 1
 **Depends on.** None.
@@ -50,10 +50,10 @@ Close.
 Recorded.
 `;
 
-const runPlan = (example: string, expectedExit: number) => {
+const runPlan = (example: string, expectedExit: number, plan = validPlan) => {
 	const directory = mkdtempSync(join(tmpdir(), "check-plan-test-"));
 	const file = join(directory, "plan.md");
-	writeFileSync(file, validPlan + example);
+	writeFileSync(file, plan + example);
 	try {
 		const result = spawnSync("node", [checker, file], { encoding: "utf8" });
 		expect(result.status).toBe(expectedExit);
@@ -107,4 +107,12 @@ test("checks prose following a multi-backtick span and unmatched delimiters", ()
 	expect(outside.stderr).toContain("mid-sentence colon");
 	const unmatched = runPlan("Use ``unclosed: bad` here.\n", 1);
 	expect(unmatched.stderr).toContain("mid-sentence colon");
+});
+
+
+test("requires installed Codex skill reads instead of upstream checkout commands", () => {
+	for (const replacement of ["", "`git show origin/main:pstack/skills/poteto-mode/SKILL.md`", "Read skills"]) {
+		const result = runPlan("", 1, validPlan.replace("Read the installed Codex skills", replacement));
+		expect(result.stderr).toContain("Read the installed Codex skills");
+	}
 });

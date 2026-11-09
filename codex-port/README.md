@@ -1,8 +1,8 @@
 # codex-port
 
 Translates upstream pstack and cursor-team-kit into one installable Codex plugin.
-The current build follows **pstack 0.15.32** and includes 74 skills, synced from
-`cursor/plugins` commit `99b609a72323b70204eab407c622f436e858e112` on 2026-10-25.
+The current build follows **pstack 0.15.36** and includes 74 skills, synced from
+`cursor/plugins` commit `1ba91fc25c0977741dd0e267849e6234b037ed0a` on 2026-10-29.
 
 ## Upstream and local files
 
@@ -73,6 +73,17 @@ local by default. Before tracking documentation, identify its concrete future
 maintenance or operational use, or an explicit user or repository requirement.
 Raw working records need an explicit tracking requirement. Required public and
 API docs, QA reports, and metric histories keep their existing workflows.
+
+## Changes in 0.15.36
+
+- Replaces the statechart scripts with upstream's TypeScript implementation,
+  executable runtime selector, and expanded CLI and model-checking fixtures.
+- Updates Interrogate to keep findings proven by a run and Arena to use a
+  different model family for its cross-judge, with explicit fallback behavior.
+- Replaces the removed orchestration scripts with a Codex-native playbook that
+  uses local state, native workers, separate worktrees, and completion waits.
+- Reconciles task restatement, verification, model fallback, help, and autopilot
+  overrides while preserving the documentation policy and runner configuration.
 
 ## Changes in 0.15.32
 
@@ -158,6 +169,13 @@ PSTACK_CODEX=/Users/gustavo/.codex/plugins/.plugin-appserver/codex-cli/bin/codex
 node codex-port/port.mjs
 ```
 
+For a version upgrade, install the regenerated package and confirm the version:
+
+```sh
+"$PSTACK_CODEX" plugin add pstack@pstack-port
+"$PSTACK_CODEX" plugin list --marketplace pstack-port
+```
+
 On another computer, change the `cd` path and set `PSTACK_CODEX` to its verified
 plugin-capable `codex` executable. If `codex` on PATH supports `plugin`, use
 `PSTACK_CODEX="$(command -v codex)"`. If the local marketplace is not registered,
@@ -188,13 +206,13 @@ instead of manually editing cache files:
 "$PSTACK_CODEX" plugin list --marketplace pstack-port
 ```
 
-Version `0.15.32` alone does not prove that a same-version refresh took effect.
+Version `0.15.36` alone does not prove that a same-version refresh took effect.
 With the default Codex home and this release, compare the installed policy:
 
 ```sh
 PSTACK_CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
 cmp codex-port/documentation-policy.md \
-  "$PSTACK_CODEX_HOME/plugins/cache/pstack-port/pstack/0.15.32/references/documentation-policy.md"
+  "$PSTACK_CODEX_HOME/plugins/cache/pstack-port/pstack/0.15.36/references/documentation-policy.md"
 ```
 
 Start a **fresh Codex desktop chat and a fresh Codex CLI session** after the
